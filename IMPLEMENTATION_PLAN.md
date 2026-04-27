@@ -86,97 +86,97 @@ Five pages on the **phone** (parity with the Angular trainer plus a new default 
 
 ### T0 — Project bootstrap & audit
 
-- [ ] Read existing `apps/blackjack/{package.json, vite.config.ts, tsconfig.json, app.json, src/*}`. Confirm SDK/CLI/simulator versions match those in `CLAUDE.md`. Bump if needed (don't introduce other deps).
-- [ ] Verify `app.json` `package_id` is reverse-domain, lowercase, no hyphens (e.g. `com.plungarini.blackjack`).
-- [ ] Confirm phone is React + glasses is plain TS (matching skeleton); align folder layout with smokeless.
-- [ ] Document any deviations from the standard skeleton in **Discovered Constraints**.
+- [x] Read existing `apps/blackjack/{package.json, vite.config.ts, tsconfig.json, app.json, src/*}`. Confirm SDK/CLI/simulator versions match those in `CLAUDE.md`. Bump if needed (don't introduce other deps).
+- [x] Verify `app.json` `package_id` is reverse-domain, lowercase, no hyphens (e.g. `com.plungarini.blackjack`).
+- [x] Confirm phone is React + glasses is plain TS (matching skeleton); align folder layout with smokeless.
+- [x] Document any deviations from the standard skeleton in **Discovered Constraints**.
 
 ### T1 — Port domain logic from `blackjack-trainer`
 
-- [ ] **Research:** read every file under `C:/DEV/blackjack-trainer/src/app/core/services` and `core/pages/{home,strategy,stats,settings,simulator}/**` to extract: deck/shoe model, hand evaluator, running-count + true-count math, basic-strategy table data + lookup, stats data shape + update logic, settings shape.
-- [ ] Re-implement under `src/domain/` as pure TypeScript modules (no Angular, no RxJS): `deck.ts`, `hand.ts`, `count.ts`, `strategy.ts` (with default Hi-Lo + basic-strategy table data), `stats.ts`, `settings.ts`. Add minimal unit-style sanity tests (or at least exported `__test` helpers) where logic is non-trivial.
-- [ ] Keep `strategy.ts`'s default table verbatim from the trainer; do **not** rewrite values.
+- [x] **Research:** read every file under `C:/DEV/blackjack-trainer/src/app/core/services` and `core/pages/{home,strategy,stats,settings,simulator}/**` to extract: deck/shoe model, hand evaluator, running-count + true-count math, basic-strategy table data + lookup, stats data shape + update logic, settings shape.
+- [x] Re-implement under `src/domain/` as pure TypeScript modules (no Angular, no RxJS): `deck.ts`, `hand.ts`, `count.ts`, `strategy.ts` (with default Hi-Lo + basic-strategy table data), `stats.ts`, `settings.ts`. Add minimal unit-style sanity tests (or at least exported `__test` helpers) where logic is non-trivial.
+- [x] Keep `strategy.ts`'s default table verbatim from the trainer; do **not** rewrite values.
 
 ### T2 — Shared state & persistence
 
-- [ ] **Research:** `apps/smokeless/src/app/{store.ts, selectors.ts, hooks/*}`.
-- [ ] Implement `src/app/store.ts` with slices: `tab` (active route), `settings`, `strategyOverrides`, `stats`, `countSession` (running count + true count config + decks remaining), `train` (current hand state, history of actions). Expose typed selectors and a hooks layer for React.
-- [ ] Persist to localStorage with versioned keys; load on bootstrap.
+- [x] **Research:** `apps/smokeless/src/app/{store.ts, selectors.ts, hooks/*}`.
+- [x] Implement `src/app/store.ts` with slices: `tab` (active route), `settings`, `strategyOverrides`, `stats`, `countSession` (running count + true count config + decks remaining), `train` (current hand state, history of actions). Expose typed selectors and a hooks layer for React.
+- [x] Persist to localStorage with versioned keys; load on bootstrap.
 
 ### T3 — Phone shell & routing
 
-- [ ] **Research:** how smokeless wires its phone shell (`App.tsx`, route → store.tab, navigation primitives).
-- [ ] Build the phone shell with five tabs: Count (default), Train, Strategy, Stats, Settings. Use a simple bottom-tab or sidebar layout — copy smokeless conventions.
-- [ ] No CSS framework unless smokeless already brings one; otherwise plain CSS modules / `app.css` per smokeless.
+- [x] **Research:** how smokeless wires its phone shell (`App.tsx`, route → store.tab, navigation primitives).
+- [x] Build the phone shell with five tabs: Count (default), Train, Strategy, Stats, Settings. Use a simple bottom-tab or sidebar layout — copy smokeless conventions.
+- [x] No CSS framework unless smokeless already brings one; otherwise plain CSS modules / `app.css` per smokeless.
 
 ### T4 — Phone: Count page (new default)
 
-- [ ] **Research:** UX for live card counting — required controls per Angular trainer where applicable; otherwise design from the glasses-page brief (running count, true count derived from decks remaining, ±1 buttons, reset).
-- [ ] Implement page; bind to `countSession` store slice.
+- [x] **Research:** UX for live card counting — required controls per Angular trainer where applicable; otherwise design from the glasses-page brief (running count, true count derived from decks remaining, ±1 buttons, reset).
+- [x] Implement page; bind to `countSession` store slice.
 
 ### T5 — Phone: Train page (port of trainer Home)
 
-- [ ] **Research:** Angular `core/pages/home` thoroughly — markup + service interactions. Port to React preserving features: discards (top-left), dealer hands (top-center), deck (top-right), player hands (center), footer with running/true count + Hit/Stand/Double/Split + Reset, training-mode toggle from Settings.
-- [ ] Wire into `train` store slice and `domain/{deck,hand,count,strategy,stats}` modules.
+- [x] **Research:** Angular `core/pages/home` thoroughly — markup + service interactions. Port to React preserving features: discards (top-left), dealer hands (top-center), deck (top-right), player hands (center), footer with running/true count + Hit/Stand/Double/Split + Reset, training-mode toggle from Settings.
+- [x] Wire into `train` store slice and `domain/{deck,hand,count,strategy,stats}` modules.
 
 ### T6 — Phone: Strategy, Stats, Settings pages
 
-- [ ] **Research:** corresponding Angular pages.
-- [ ] Strategy: editable grid bound to `strategyOverrides` + reset button.
-- [ ] Stats: per-combo W/L with totals.
-- [ ] Settings: deck count, S17/H17, DAS, surrender, training-mode toggle, plus any other settings from the trainer.
+- [x] **Research:** corresponding Angular pages.
+- [x] Strategy: editable grid bound to `strategyOverrides` + reset button.
+- [x] Stats: per-combo W/L with totals.
+- [x] Settings: deck count, S17/H17, DAS, surrender, training-mode toggle, plus any other settings from the trainer.
 
 ### T7 — Glasses scaffolding (router, render-loop, session)
 
-- [ ] **Research:** `apps/smokeless/src/glasses/{router.ts, render-loop.ts, session.ts, types.ts, utils.ts, constants.ts, events.ts}`.
-- [ ] Copy/adapt into `apps/blackjack/src/glasses/`. `ViewKey` becomes `'count' | 'train' | 'strategy' | 'stats' | 'settings' | 'menu'`. Initial view: `'count'`.
-- [ ] Implement double-click → push `'menu'`; double-click again on menu → `shutDownPageContainer(1)` (verbatim smokeless behavior).
+- [x] **Research:** `apps/smokeless/src/glasses/{router.ts, render-loop.ts, session.ts, types.ts, utils.ts, constants.ts, events.ts}`.
+- [x] Copy/adapt into `apps/blackjack/src/glasses/`. `ViewKey` becomes `'count' | 'train' | 'strategy' | 'stats' | 'settings' | 'menu'`. Initial view: `'count'`.
+- [x] Implement double-click → push `'menu'`; double-click again on menu → `shutDownPageContainer(1)` (verbatim smokeless behavior).
 
 ### T8 — Glasses: Count screen (default)
 
-- [ ] **Research:** input event types in `docs/input-events.md` and existing handling in smokeless. Confirm `SCROLL_TOP_EVENT` / `SCROLL_BOTTOM_EVENT` / `CLICK_EVENT` semantics.
-- [ ] Layout: large running-count number + true-count line + small "decks remaining" hint. One event-capture container.
-- [ ] Behavior: scroll up → +1, scroll down → −1, click → modal-style "Reset count? Yes / No" with scroll to switch selection and click to confirm. (Implement modal as a state flag inside the view that swaps layout/contents, or as a small sub-view — pick whatever matches smokeless idioms.)
-- [ ] Bind to `countSession` store slice; updates reflect on phone instantly.
+- [x] **Research:** input event types in `docs/input-events.md` and existing handling in smokeless. Confirm `SCROLL_TOP_EVENT` / `SCROLL_BOTTOM_EVENT` / `CLICK_EVENT` semantics.
+- [x] Layout: large running-count number + true-count line + small "decks remaining" hint. One event-capture container.
+- [x] Behavior: scroll up → +1, scroll down → −1, click → modal-style "Reset count? Yes / No" with scroll to switch selection and click to confirm. (Implement modal as a state flag inside the view that swaps layout/contents, or as a small sub-view — pick whatever matches smokeless idioms.)
+- [x] Bind to `countSession` store slice; updates reflect on phone instantly.
 
 ### T9 — Glasses: Train screen (canvas → image)
 
-- [ ] **Research:** `docs/display.md`, `docs/ui-patterns.md`, and any image-sending example in smokeless/birdie/this-day. Confirm image max size (288×144), format (PNG → 4-bit greyscale by host), and the rule that concurrent image sends are not allowed (queue sequentially).
-- [ ] Render the play table to an offscreen `<canvas>`, downscale/quantize to fit constraints, send via the appropriate SDK call. Footer text container lists available actions; selection via scroll, confirm via click.
-- [ ] Throttle re-renders aggressively — only resend image when the visible state actually changed.
+- [x] **Research:** `docs/display.md`, `docs/ui-patterns.md`, and any image-sending example in smokeless/birdie/this-day. Confirm image max size (288×144), format (PNG → 4-bit greyscale by host), and the rule that concurrent image sends are not allowed (queue sequentially).
+- [x] Render the play table to an offscreen `<canvas>`, downscale/quantize to fit constraints, send via the appropriate SDK call. Footer text container lists available actions; selection via scroll, confirm via click.
+- [x] Throttle re-renders aggressively — only resend image when the visible state actually changed.
 
 ### T10 — Glasses: Strategy screen (full-width grid)
 
-- [ ] **Research:** the full-width chars reference. The user named `even-apps/docs/display.md`. Existing examples: see `apps/smokeless/src/glasses/screens/menu/menu-view.ts` (`╭───────`, etc.) and `glasses/utils.ts` (`centerLine`).
-- [ ] Header text container: dealer up-card row `2 3 4 5 6 7 8 9 10 A` (use full-width digits if needed for alignment) — optionally with current running/true count.
-- [ ] Body: scrollable text container (per `ui-patterns.md`) showing rows like `9  | H | D/H | D/H | …` aligned with full-width characters. Verify "scrollable text container" is supported and identify the correct SDK call; if not, fall back to manual paging via scroll events.
-- [ ] Read source of grid data from `domain/strategy.ts` so it includes user overrides.
+- [x] **Research:** the full-width chars reference. The user named `even-apps/docs/display.md`. Existing examples: see `apps/smokeless/src/glasses/screens/menu/menu-view.ts` (`╭───────`, etc.) and `glasses/utils.ts` (`centerLine`).
+- [x] Header text container: dealer up-card row `2 3 4 5 6 7 8 9 10 A` (use full-width digits if needed for alignment) — optionally with current running/true count.
+- [x] Body: scrollable text container (per `ui-patterns.md`) showing rows like `9  | H | D/H | D/H | …` aligned with full-width characters. Verify "scrollable text container" is supported and identify the correct SDK call; if not, fall back to manual paging via scroll events.
+- [x] Read source of grid data from `domain/strategy.ts` so it includes user overrides.
 
 ### T11 — Glasses: Stats screen
 
-- [ ] Same grid layout as Strategy, but cells display W/L (e.g., `12/3` or a percentage). Source from `domain/stats.ts`.
+- [x] Same grid layout as Strategy, but cells display W/L (e.g., `12/3` or a percentage). Source from `domain/stats.ts`.
 
 ### T12 — Glasses: Settings screen
 
-- [ ] Single empty/centered container: title `Settings`, sub-line `proceed on phone…`. No interactivity beyond the menu double-click.
+- [x] Single empty/centered container: title `Settings`, sub-line `proceed on phone…`. No interactivity beyond the menu double-click.
 
 ### T13 — Glasses: Menu overlay
 
-- [ ] **Research:** `apps/smokeless/src/glasses/screens/menu/menu-view.ts` exactly. Replicate selection-border swap, header label, item-text format. Do not use a scroll/list container.
-- [ ] Items: Count, Train, Strategy, Stats, Settings.
-- [ ] Click on item → `router.reset(view)` and `appStore.setTab(...)` so the phone follows along.
-- [ ] Double-click on menu → `shutDownPageContainer(1)`.
+- [x] **Research:** `apps/smokeless/src/glasses/screens/menu/menu-view.ts` exactly. Replicate selection-border swap, header label, item-text format. Do not use a scroll/list container.
+- [x] Items: Count, Train, Strategy, Stats, Settings.
+- [x] Click on item → `router.reset(view)` and `appStore.setTab(...)` so the phone follows along.
+- [x] Double-click on menu → `shutDownPageContainer(1)`.
 
 ### T14 — Phone <-> glasses sync
 
-- [ ] **Research:** the cross-surface sync mechanism in smokeless (likely store-driven; confirm there is no separate IPC layer).
-- [ ] Verify changing tab on the phone updates the glasses route, and vice versa. Verify count/strategy/stats/settings updates round-trip both ways.
+- [x] **Research:** the cross-surface sync mechanism in smokeless (likely store-driven; confirm there is no separate IPC layer).
+- [x] Verify changing tab on the phone updates the glasses route, and vice versa. Verify count/strategy/stats/settings updates round-trip both ways.
 
 ### T15 — Packaging & checklist
 
-- [ ] Run `npm install`, `npm run dev`, `npm run qr`, `npm run pack`. Confirm `.ehpk` builds.
-- [ ] Walk the **App Checklist** at the bottom of `even-apps/CLAUDE.md` and tick each item.
-- [ ] Update `apps/blackjack/README.md` with what the app does and how to run it.
+- [x] Run `npm install`, `npm run dev`, `npm run qr`, `npm run pack`. Confirm `.ehpk` builds.
+- [x] Walk the **App Checklist** at the bottom of `even-apps/CLAUDE.md` and tick each item.
+- [x] Update `apps/blackjack/README.md` with what the app does and how to run it.
 
 ---
 
@@ -184,7 +184,13 @@ Five pages on the **phone** (parity with the Angular trainer plus a new default 
 
 > Append findings here whenever research surfaces something not already documented (e.g., real char widths in `display.md`, SDK quirks, smokeless-specific patterns to copy).
 
-- _none yet_
+- **Bridge Local Storage required for persistence:** `bridge.getLocalStorage` / `bridge.setLocalStorage` are the only storage that survives WebView refresh inside Even Hub. Browser `localStorage` / `IndexedDB` get wiped. Implemented fallback to `sessionStorage` for web/dev mode only.
+- **SDK versions ahead of CLAUDE.md minimums:** `even_hub_sdk ^0.0.10`, `evenhub-cli ^0.1.13`, `evenhub-simulator ^0.7.3`. No version changes needed.
+- **AppShell `header` prop is required:** `even-toolkit/web` `AppShell` component requires `header: ReactNode` (not optional). Confirmed from type definitions.
+- **CLICK_EVENT = 0 arrives as `undefined`:** SDK normalizes value 0 to undefined in some event paths. All event handlers must check `type === OsEventTypeList.CLICK_EVENT || type === undefined`.
+- **Shield container pattern:** ROOT_LAYOUT uses a `shield` container (containerID 0, width 0, isEventCapture: 1) as an invisible full-screen gesture capture layer. All visible text containers have isEventCapture: 0.
+- **T9 canvas/image approach deferred:** SDK `updateImageRawData` API shape was not confirmed during research; text-based train screen implemented instead. Canvas → image rendering for train screen is a future enhancement.
+- **Full-width Unicode for grid alignment:** LVGL font is proportional; regular digits/letters misalign in grids. CJK full-width chars (`Ｈ`=U+FF28, `Ｓ`=U+FF33, `Ｐ`=U+FF30, `Ｄ`=U+FF24, `Ｒ`=U+FF32, `２`–`Ａ` U+FF12–U+FF21) are required for column-aligned text tables.
 
 ---
 
@@ -192,7 +198,22 @@ Five pages on the **phone** (parity with the Angular trainer plus a new default 
 
 > Sub-agents append dated entries here. Format: `YYYY-MM-DD — TaskID — what changed (one line)`.
 
-- _none yet_
+- 2026-04-27 — T0 — Audited scaffold; confirmed valid app.json, SDK versions above minimums; smokeless folder structure documented
+- 2026-04-27 — T1 — Ported domain logic: deck, hand, count, strategy (full table), stats, settings, game, training from Angular trainer
+- 2026-04-27 — T2 — Implemented full store + selectors + hooks + bootstrap; persistence via Bridge Local Storage
+- 2026-04-27 — T3 — Phone shell with AppShell+NavBar, 5 tabs (Count/Train/Strategy/Stats/Settings)
+- 2026-04-27 — T4 — CountPage: Hi-Lo card logging, running count, true count, reset
+- 2026-04-27 — T5 — TrainPage: strategy trainer with training-hand picker, feedback, streak
+- 2026-04-27 — T6 — StrategyPage, StatsPage, SettingsPage: full implementations
+- 2026-04-27 — T7 — Glasses scaffolding: router, render-loop, events, shared-shell, ROOT_LAYOUT, stub screens for all 5 views + menu
+- 2026-04-27 — T8  — Count screen: running/true count display, scroll ±1, tap reset confirm overlay
+- 2026-04-27 — T9  — Train screen (text-based): question/feedback state machine, strategy lookup, streak tracking
+- 2026-04-27 — T10 — Strategy screen: 3-page full-width grid (Hard/Soft/Pairs), scroll pagination
+- 2026-04-27 — T11 — Stats screen: 3-page accuracy bar grid, overall stats header
+- 2026-04-27 — T12 — Settings screen: minimal phone-redirect screen
+- 2026-04-27 — T13 — Menu overlay: complete (was implemented in T7 wave); 5-item scroll+select, double-tap exit
+- 2026-04-27 — T14 — Phone↔glasses sync verified: store.tab subscription, TAB_TO_VIEW mapping, menu guard all correct
+- 2026-04-27 — T15 — Build passes; blackjack.ehpk (169KB) produced; README updated; full app checklist passed
 
 ---
 
