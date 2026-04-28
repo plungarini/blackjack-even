@@ -116,6 +116,10 @@ class AppStore {
     this.commit({ ...this.state, strategyOverrides: overrides });
   }
 
+  setStrategyOverrides(overrides: Partial<StrategyTable>): void {
+    this.commit({ ...this.state, strategyOverrides: overrides });
+  }
+
   resetStrategyOverrides(): void {
     this.commit({ ...this.state, strategyOverrides: {} });
   }

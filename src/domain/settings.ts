@@ -1,3 +1,5 @@
+export type ThemeMode = 'light' | 'dark' | 'system';
+
 export interface UserSettings {
   deckCount: number;
   hideCount: boolean;
@@ -7,6 +9,7 @@ export interface UserSettings {
   dealerHitsOnSoft17: boolean;
   allowDoubleAfterSplit: boolean;
   allowSurrender: boolean;
+  theme: ThemeMode;
 }
 
 export const DEFAULT_SETTINGS: UserSettings = {
@@ -18,6 +21,7 @@ export const DEFAULT_SETTINGS: UserSettings = {
   dealerHitsOnSoft17: false,
   allowDoubleAfterSplit: true,
   allowSurrender: true,
+  theme: 'system',
 };
 
 export function clampSettings(settings: Partial<UserSettings>): UserSettings {

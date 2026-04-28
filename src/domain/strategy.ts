@@ -112,3 +112,83 @@ export function resolveAction(
     case 'R/H': return canSurrender ? 'surrender' : 'hit';
   }
 }
+
+export function cellValueToActions(cell: StrategyCellValue): PlayerAction[] {
+  switch (cell) {
+    case 'H': return ['hit'];
+    case 'S': return ['stand'];
+    case 'P': return ['split'];
+    case 'D/H': return ['double', 'hit'];
+    case 'D/S': return ['double', 'stand'];
+    case 'P/H': return ['split', 'hit'];
+    case 'R/H': return ['surrender', 'hit'];
+  }
+}
+
+export function getDealerVs(dealerCard: Card): StrategyVs {
+  const rank = dealerCard.rank;
+  if (rank === 'T' || rank === 'J' || rank === 'Q' || rank === 'K' || rank === 10) return '10';
+  if (rank === 'A') return 'A';
+  return String(rank) as StrategyVs;
+}
+
+export interface StrategyFeedback {
+  entry: StrategyEntry;
+  vs: StrategyVs;
+  actions: PlayerAction[];
+}
+
+export function getStrategyFeedback(
+  playerCards: Card[],
+  dealerCard: Card,
+  overrides?: Partial<StrategyTable>,
+): StrategyFeedback {
+  const dealerVs = getDealerVs(dealerCard);
+  const visible = playerCards.filter((c) => !c.hidden);
+
+  if (visible.length === 2) {
+    const [a, b] = visible;
+
+    // Pair check
+    if (a!.rank === 'A' && b!.rank === 'A') {
+      const cell = lookupStrategy('A,A', dealerVs, overrides);
+      return { entry: 'A,A', vs: dealerVs, actions: cellValueToActions(cell) };
+    }
+    const aVal = cardValue(a!.rank);
+    const bVal = cardValue(b!.rank);
+    if (aVal === bVal && aVal === 10) {
+      const cell = lookupStrategy('10,10', dealerVs, overrides);
+      return { entry: '10,10', vs: dealerVs, actions: cellValueToActions(cell) };
+    }
+    if (aVal === bVal && aVal !== 11) {
+      const entry = `${aVal},${aVal}` as StrategyEntry;
+      const cell = lookupStrategy(entry, dealerVs, overrides);
+      return { entry, vs: dealerVs, actions: cellValueToActions(cell) };
+    }
+
+    // Soft hand check
+    const aceIdx = visible.findIndex((c) => c.rank === 'A');
+    if (aceIdx >= 0) {
+      const other = visible[aceIdx === 0 ? 1 : 0]!;
+      const otherVal = cardValue(other.rank);
+      if (otherVal >= 9) {
+        return { entry: '17', vs: dealerVs, actions: ['stand'] };
+      }
+      const softEntry = `A,${otherVal}` as StrategyEntry;
+      const cell = lookupStrategy(softEntry, dealerVs, overrides);
+      return { entry: softEntry, vs: dealerVs, actions: cellValueToActions(cell) };
+    }
+  }
+
+  const score = handValue(visible);
+  if (score > 17) return { entry: '17', vs: dealerVs, actions: ['stand'] };
+  if (score < 8) return { entry: '8', vs: dealerVs, actions: ['hit'] };
+
+  const entry = String(score) as StrategyEntry;
+  const cell = lookupStrategy(entry, dealerVs, overrides);
+  return { entry, vs: dealerVs, actions: cellValueToActions(cell) };
+}
+
+export function isActionCorrect(feedback: StrategyFeedback, action: PlayerAction): boolean {
+  return feedback.actions.includes(action);
+}

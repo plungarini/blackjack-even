@@ -7,6 +7,7 @@ export interface Card {
   suit: Suit;
   rank: Rank;
   hidden?: boolean;
+  doubled?: boolean;
 }
 
 export function displayRank(rank: Rank): string {
@@ -22,6 +23,19 @@ export function displaySuit(suit: Suit): string {
 export function displayCard(card: Card): string {
   if (card.hidden) return '[?]';
   return `${displayRank(card.rank)}${displaySuit(card.suit)}`;
+}
+
+export function cardFileName(card: Card): string {
+  if (card.hidden) return 'back.png';
+  return `${displayRank(card.rank)}${card.suit}.svg`;
+}
+
+export function drawCardByValue(shoe: Card[], targetRank: Rank): [Card | null, Card[]] {
+  const idx = shoe.findIndex((c) => c.rank === targetRank);
+  if (idx === -1) return [null, shoe];
+  const card = shoe[idx]!;
+  const remaining = [...shoe.slice(0, idx), ...shoe.slice(idx + 1)];
+  return [card, remaining];
 }
 
 const SUITS: Suit[] = ['H', 'D', 'C', 'S'];
