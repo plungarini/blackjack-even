@@ -15,9 +15,9 @@ export function buildStatusRenderState(
     layout: ROOT_LAYOUT,
     textContents: {
       shield: '',
-      header: centerLine('♠ BLACKJACK ♠', BODY_INNER_WIDTH),
+      header: centerLine('♠ Blackjack', BODY_INNER_WIDTH),
       body,
-      footer: phase === 'error' ? centerLine('Double-tap to exit', BODY_INNER_WIDTH) : '',
+      footer: '',
     },
   };
 }

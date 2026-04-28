@@ -1,7 +1,7 @@
 import { OsEventTypeList } from '@evenrealities/even_hub_sdk';
 import type { EvenHubEvent } from '@evenrealities/even_hub_sdk';
 import type { HudLayoutDescriptor, View, ViewKey } from '../../types';
-import { ROOT_LAYOUT, BODY_INNER_WIDTH } from '../shared-shell';
+import { ROOT_LAYOUT, BODY_INNER_WIDTH, buildHeader, buildFooter } from '../shared-shell';
 import { centerLine } from '../../utils';
 import type { Router } from '../../router';
 
@@ -20,14 +20,14 @@ export class SettingsView implements View {
   contents(): Record<string, string> {
     return {
       shield: '',
-      header: centerLine('SETTINGS', BODY_INNER_WIDTH),
+      header: buildHeader('Settings'),
       body: [
         '',
         centerLine('Settings', BODY_INNER_WIDTH),
         '',
-        centerLine('Adjust settings on your phone.', BODY_INNER_WIDTH),
+        centerLine('Adjust on your phone', BODY_INNER_WIDTH),
       ].join('\n'),
-      footer: centerLine('2×-tap = menu', BODY_INNER_WIDTH),
+      footer: buildFooter('settings'),
     };
   }
 

@@ -1,8 +1,8 @@
 import { OsEventTypeList } from '@evenrealities/even_hub_sdk';
 import type { EvenHubEvent } from '@evenrealities/even_hub_sdk';
 import type { HudLayoutDescriptor, View, ViewKey } from '../../types';
-import { ROOT_LAYOUT, BODY_INNER_WIDTH } from '../shared-shell';
-import { centerLine } from '../../utils';
+import { ROOT_LAYOUT, BODY_INNER_WIDTH, buildHeader, buildFooter } from '../shared-shell';
+import { centerLine, alignRow } from '../../utils';
 import type { Router } from '../../router';
 import { scheduleRender } from '../../render-loop';
 import { appStore } from '../../../app/store';
@@ -33,11 +33,14 @@ export class CountView implements View {
     const { runningCount, discardedCards, settings } = state;
     const trueCount = computeTrueCount(runningCount, discardedCards, settings.deckCount);
     const sign = (n: number) => (n > 0 ? `+${n}` : String(n));
+    const halfDecks = Math.floor(discardedCards / 26);
+    const totalHalfDecks = settings.deckCount * 2;
+    const remainingHalfDecks = Math.max(0, totalHalfDecks - halfDecks);
 
     if (this.confirmShowing) {
       return {
         shield: '',
-        header: centerLine('♠ BLACKJACK ♠', BODY_INNER_WIDTH),
+        header: buildHeader('Count'),
         body: [
           '',
           centerLine('Reset count?', BODY_INNER_WIDTH),
@@ -45,22 +48,23 @@ export class CountView implements View {
           `  ${this.confirmChoice === 'yes' ? '▶' : ' '} Yes`,
           `  ${this.confirmChoice === 'no'  ? '▶' : ' '} No`,
         ].join('\n'),
-        footer: centerLine('Scroll=select  ·  Tap=confirm', BODY_INNER_WIDTH),
+        footer: buildFooter('count'),
       };
     }
 
     return {
       shield: '',
-      header: centerLine('♠ BLACKJACK ♠', BODY_INNER_WIDTH),
+      header: buildHeader('Count'),
       body: [
         '',
-        centerLine(`Running count:  ${sign(runningCount)}`, BODY_INNER_WIDTH),
+        centerLine(`${sign(runningCount)}`, BODY_INNER_WIDTH),
         '',
-        centerLine(`True count:  ${sign(trueCount)}`, BODY_INNER_WIDTH),
+        alignRow('True count', sign(trueCount), BODY_INNER_WIDTH),
         '',
-        centerLine(`Shoe: ${settings.deckCount} decks  ·  ${discardedCards} cards dealt`, BODY_INNER_WIDTH),
+        alignRow('Decks remaining', `${(remainingHalfDecks / 2).toFixed(1)}`, BODY_INNER_WIDTH),
+        alignRow('Cards dealt', `${discardedCards}`, BODY_INNER_WIDTH),
       ].join('\n'),
-      footer: centerLine('↑ +1  ↓ −1  ·  Tap=reset  ·  2×=menu', BODY_INNER_WIDTH),
+      footer: buildFooter('count'),
     };
   }
 
@@ -90,7 +94,7 @@ export class CountView implements View {
     if (type === OsEventTypeList.SCROLL_TOP_EVENT) {
       appStore.setRunningCount(appStore.getState().runningCount + 1);
       appStore.incrementDiscarded(1);
-      return; // store commit triggers scheduleRender via subscription
+      return;
     }
 
     if (type === OsEventTypeList.SCROLL_BOTTOM_EVENT) {

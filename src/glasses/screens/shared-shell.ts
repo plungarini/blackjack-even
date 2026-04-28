@@ -1,5 +1,6 @@
 import type { HudLayoutDescriptor } from '../types';
 import { HUD_WIDTH, HUD_HEIGHT, HUD_BORDER_RADIUS } from '../constants';
+import { alignRow } from '../utils';
 
 export const ROOT_LAYOUT: HudLayoutDescriptor = {
   key: 'root',
@@ -19,17 +20,17 @@ export const ROOT_LAYOUT: HudLayoutDescriptor = {
       xPosition: 12,
       yPosition: 0,
       width: HUD_WIDTH - 24,
-      height: 40,
+      height: 38,
       paddingLength: 4,
     },
     {
       containerID: 2,
       containerName: 'body',
       xPosition: 0,
-      yPosition: 38,
+      yPosition: 36,
       width: HUD_WIDTH,
-      height: 213,
-      paddingLength: 15,
+      height: 216,
+      paddingLength: 14,
       borderWidth: 1,
       borderColor: 13,
       borderRadius: HUD_BORDER_RADIUS,
@@ -37,13 +38,32 @@ export const ROOT_LAYOUT: HudLayoutDescriptor = {
     {
       containerID: 3,
       containerName: 'footer',
-      xPosition: 13,
-      yPosition: 252,
-      width: HUD_WIDTH - 26,
-      height: 35,
-      paddingLength: 4,
+      xPosition: 10,
+      yPosition: 254,
+      width: HUD_WIDTH - 20,
+      height: 34,
+      paddingLength: 2,
     },
   ],
 };
 
-export const BODY_INNER_WIDTH = HUD_WIDTH - 2 * 15 - 2; // 544px (subtract padding + border)
+export const BODY_INNER_WIDTH = HUD_WIDTH - 2 * 14 - 2; // 546px
+
+export type RootViewKey = 'count' | 'train' | 'strategy' | 'stats' | 'settings';
+
+const TAB_LABELS: Record<RootViewKey, string> = {
+  count: 'Count',
+  train: 'Train',
+  strategy: 'Strat',
+  stats: 'Stats',
+  settings: 'Sett',
+};
+
+export function buildHeader(viewName: string): string {
+  return alignRow('♠ Blackjack', viewName, BODY_INNER_WIDTH);
+}
+
+export function buildFooter(active: RootViewKey): string {
+  const tabs: RootViewKey[] = ['count', 'strategy', 'train', 'stats', 'settings'];
+  return tabs.map((t) => (t === active ? `[${TAB_LABELS[t]}]` : ` ${TAB_LABELS[t]} `)).join('   ');
+}
