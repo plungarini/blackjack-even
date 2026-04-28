@@ -1,100 +1,150 @@
+import { useCallback } from 'react';
 import { useAppSelector } from '../app/hooks/useAppSelector';
-import { lookupStrategy } from '../domain/strategy';
-import type { StrategyEntry, StrategyVs, StrategyCellValue } from '../domain/strategy';
+import { appStore } from '../app/store';
+import { persistStrategyOverrides } from '../app/bootstrap';
+import { DEFAULT_STRATEGY, type StrategyEntry, type StrategyVs, type StrategyCellValue } from '../domain/strategy';
+import { StrategyCell } from '../components/StrategyCell';
 
 const ALL_VS: StrategyVs[] = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'A'];
 
-const SECTION_LABELS: { entries: StrategyEntry[]; label: string }[] = [
+const SECTIONS: { label: string; entries: StrategyEntry[] }[] = [
   { label: 'Hard totals', entries: ['8', '9', '10', '11', '12', '13', '14', '15', '16', '17'] },
   { label: 'Soft hands', entries: ['A,2', 'A,3', 'A,4', 'A,5', 'A,6', 'A,7', 'A,8'] },
   { label: 'Pairs', entries: ['2,2', '3,3', '4,4', '5,5', '6,6', '7,7', '8,8', '9,9', '10,10', 'A,A'] },
 ];
 
-function cellStyle(value: StrategyCellValue): string {
-  switch (value) {
-    case 'H':   return 'bg-green-600 text-white';
-    case 'S':   return 'bg-red-600 text-white';
-    case 'D/H': return 'bg-blue-500 text-white';
-    case 'D/S': return 'bg-purple-600 text-white';
-    case 'P':   return 'bg-yellow-500 text-white';
-    case 'P/H': return 'bg-orange-500 text-white';
-    case 'R/H': return 'bg-gray-500 text-white';
-  }
-}
+const LEGEND: { code: StrategyCellValue; label: string; color: string }[] = [
+  { code: 'H', label: 'Hit', color: 'bg-blue-600' },
+  { code: 'S', label: 'Stand', color: 'bg-red-600' },
+  { code: 'P', label: 'Split', color: 'bg-yellow-500' },
+  { code: 'P/H', label: 'Split, or Hit', color: 'bg-amber-600' },
+  { code: 'D/H', label: 'Double Down, or Hit', color: 'bg-green-500' },
+  { code: 'D/S', label: 'Double Down, or Stand', color: 'bg-green-700' },
+  { code: 'R/H', label: 'Surrender, or Hit', color: 'bg-purple-600' },
+];
 
-function cellLabel(value: StrategyCellValue): string {
-  return value;
+function canSplitEntry(entry: StrategyEntry): boolean {
+  return entry.includes(',') && entry.split(',')[0] === entry.split(',')[1];
 }
 
 export function StrategyPage() {
   const strategyOverrides = useAppSelector((s) => s.strategyOverrides);
+  const hasOverrides = Object.keys(strategyOverrides).length > 0;
+
+  const getValue = useCallback(
+    (entry: StrategyEntry, vs: StrategyVs): StrategyCellValue => {
+      return strategyOverrides[entry]?.[vs] ?? DEFAULT_STRATEGY[entry][vs];
+    },
+    [strategyOverrides]
+  );
+
+  const handleChange = (entry: StrategyEntry, vs: StrategyVs, value: StrategyCellValue) => {
+    const defaultValue = DEFAULT_STRATEGY[entry][vs];
+    if (value === defaultValue) {
+      // Remove override if it matches default
+      const entryOverrides = { ...strategyOverrides[entry] };
+      delete entryOverrides[vs];
+      if (Object.keys(entryOverrides).length === 0) {
+        const newOverrides = { ...strategyOverrides };
+        delete newOverrides[entry];
+        appStore.setStrategyOverrides(newOverrides);
+      } else {
+        appStore.setStrategyOverrides({
+          ...strategyOverrides,
+          [entry]: entryOverrides,
+        });
+      }
+    } else {
+      appStore.setStrategyOverride(entry, vs, value);
+    }
+    void persistStrategyOverrides();
+  };
+
+  const handleReset = () => {
+    appStore.resetStrategyOverrides();
+    void persistStrategyOverrides();
+  };
 
   return (
-    <div className="pb-32">
-      <div className="px-3 pt-4 pb-2">
-        <p className="text-xs text-text-dim">Basic strategy chart · Hi-Lo · S17 · DAS · Surrender</p>
-      </div>
+    <div className="pb-32 max-h-[100dvh] overflow-y-auto">
+      <div className="flex flex-col-reverse lg:flex-row gap-4 md:pb-4 pb-24 p-3 sm:p-4">
+        <div className="flex flex-col w-full max-w-2xl overflow-hidden border divide-y rounded divide-zinc-700 border-zinc-700">
+          {/* Header */}
+          <div className="flex flex-row items-center leading-8 divide-x bg-zinc-900 divide-zinc-700 border-zinc-700">
+            <p className="flex-1 w-0 text-center sm:text-sm text-xs !leading-8" />
+            {ALL_VS.map((vs) => (
+              <p key={vs} className="flex-1 w-0 text-center sm:text-sm text-xs !leading-8">
+                {vs}
+              </p>
+            ))}
+          </div>
 
-      <div className="overflow-x-auto">
-        <div className="min-w-[480px] px-3 space-y-6 pb-2">
-          {SECTION_LABELS.map(({ label, entries }) => (
+          {SECTIONS.map(({ label, entries }) => (
             <div key={label}>
-              <p className="text-xs font-semibold text-text-dim uppercase tracking-wide mb-2">{label}</p>
-              <table className="w-full border-collapse text-[11px]">
-                <thead>
-                  <tr>
-                    <th className="w-12 text-left px-1 py-1 text-text-dim font-normal">Hand</th>
-                    {ALL_VS.map((vs) => (
-                      <th key={vs} className="text-center px-0.5 py-1 text-text-dim font-normal w-8">
-                        {vs}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {entries.map((entry) => (
-                    <tr key={entry}>
-                      <td className="px-1 py-0.5 font-medium text-foreground">{entry}</td>
-                      {ALL_VS.map((vs) => {
-                        const value = lookupStrategy(entry, vs, strategyOverrides);
-                        const isOverride = strategyOverrides[entry]?.[vs] !== undefined;
-                        return (
-                          <td key={vs} className="px-0.5 py-0.5 text-center">
-                            <span
-                              className={`inline-block w-7 h-6 rounded text-[10px] font-bold leading-6 ${cellStyle(value)} ${isOverride ? 'ring-2 ring-white/60' : ''}`}
-                            >
-                              {cellLabel(value)}
-                            </span>
-                          </td>
-                        );
-                      })}
-                    </tr>
+              {entries.map((entry) => (
+                <div
+                  key={entry}
+                  className="flex flex-row items-center leading-8 divide-x divide-zinc-700"
+                >
+                  <p className="flex-1 w-0 text-center sm:text-sm text-xs !leading-8 bg-zinc-900">
+                    {entry}
+                  </p>
+                  {ALL_VS.map((vs) => (
+                    <StrategyCell
+                      key={vs}
+                      value={getValue(entry, vs)}
+                      canSplit={canSplitEntry(entry)}
+                      onChange={(value) => handleChange(entry, vs, value)}
+                    />
                   ))}
-                </tbody>
-              </table>
+                </div>
+              ))}
             </div>
           ))}
         </div>
+
+        {/* Legend sidebar */}
+        <div className="flex-1 md:block hidden">
+          {hasOverrides && (
+            <button
+              type="button"
+              onClick={handleReset}
+              className="mb-2 px-4 py-2 text-sm font-medium border rounded bg-zinc-800 border-zinc-700 text-zinc-200 hover:bg-zinc-700"
+            >
+              Reset to Default
+            </button>
+          )}
+          <div className="flex flex-col gap-y-1 mb-4">
+            {LEGEND.map(({ code, label, color }) => (
+              <div key={code} className="flex flex-row items-center gap-x-2">
+                <p className={`w-screen block max-w-14 leading-8 rounded text-center !text-white ${color}`}>
+                  {code}
+                </p>
+                <p className="font-semibold text-sm text-zinc-200">- {label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
-      <div className="px-3 pt-4">
+      {/* Mobile legend */}
+      <div className="md:hidden px-3 pb-4">
+        {hasOverrides && (
+          <button
+            type="button"
+            onClick={handleReset}
+            className="mb-2 px-4 py-2 text-sm font-medium border rounded w-full bg-zinc-800 border-zinc-700 text-zinc-200"
+          >
+            Reset to Default
+          </button>
+        )}
         <div className="flex flex-wrap gap-2">
-          {(
-            [
-              ['H', 'Hit', 'bg-green-600'],
-              ['S', 'Stand', 'bg-red-600'],
-              ['D/H', 'Double/Hit', 'bg-blue-500'],
-              ['D/S', 'Double/Stand', 'bg-purple-600'],
-              ['P', 'Split', 'bg-yellow-500'],
-              ['P/H', 'Split/Hit', 'bg-orange-500'],
-              ['R/H', 'Surrender/Hit', 'bg-gray-500'],
-            ] as [string, string, string][]
-          ).map(([code, desc, bg]) => (
-            <span key={code} className="flex items-center gap-1 text-[10px] text-text-dim">
-              <span className={`inline-block w-6 h-5 rounded text-[9px] font-bold text-white leading-5 text-center ${bg}`}>
+          {LEGEND.map(({ code, label, color }) => (
+            <span key={code} className="flex items-center gap-1 text-[10px] text-zinc-400">
+              <span className={`inline-block w-6 h-5 rounded text-[9px] font-bold text-white leading-5 text-center ${color}`}>
                 {code}
               </span>
-              {desc}
+              {label}
             </span>
           ))}
         </div>

@@ -1,4 +1,3 @@
-import { Button, Card } from 'even-toolkit/web';
 import { useAppSelector } from '../app/hooks/useAppSelector';
 import { useCountActions } from '../app/hooks/useCountActions';
 import { computeTrueCount } from '../domain/count';
@@ -45,9 +44,9 @@ const CARD_GROUPS: CardGroup[] = [
 ];
 
 function countColor(n: number): string {
-  if (n > 0) return 'text-green-500';
-  if (n < 0) return 'text-red-500';
-  return 'text-text-dim';
+  if (n > 0) return 'text-green-400';
+  if (n < 0) return 'text-red-400';
+  return 'text-zinc-400';
 }
 
 export function CountPage() {
@@ -63,47 +62,59 @@ export function CountPage() {
   const decksLeft = (remaining / 52).toFixed(1);
 
   return (
-    <div className="px-3 pt-4 pb-32 space-y-4">
-      <Card className="text-center py-6">
+    <div className="p-3 sm:p-4 pb-32 max-h-[100dvh] overflow-y-auto">
+      {/* Count Display */}
+      <div className="bg-slate-800 rounded-md p-6 text-center mb-4">
         {hideCount ? (
-          <p className="text-text-dim text-sm">Count hidden</p>
+          <p className="text-zinc-400 text-sm font-['Poppins']">Count hidden</p>
         ) : (
           <>
-            <p className="text-xs text-text-dim mb-1 uppercase tracking-wide">Running count</p>
-            <p className={`text-6xl font-bold tabular-nums ${countColor(runningCount)}`}>
+            <p className="text-xs text-zinc-400 mb-1 uppercase tracking-wide font-['Poppins']">
+              Running count
+            </p>
+            <p className={`text-6xl font-bold tabular-nums font-['Poppins'] ${countColor(runningCount)}`}>
               {runningCount > 0 ? `+${runningCount}` : runningCount}
             </p>
-            <p className="text-xs text-text-dim mt-3">
-              True count:{' '}
-              <span className={`font-semibold ${countColor(trueCount)}`}>
-                {trueCount > 0 ? `+${trueCount}` : trueCount}
-              </span>
-            </p>
+            <div className="mt-3 flex justify-center gap-6">
+              <div>
+                <p className="text-[10px] text-zinc-500 uppercase tracking-wide">True count</p>
+                <p className={`text-xl font-semibold tabular-nums ${countColor(trueCount)}`}>
+                  {trueCount > 0 ? `+${trueCount}` : trueCount}
+                </p>
+              </div>
+              <div>
+                <p className="text-[10px] text-zinc-500 uppercase tracking-wide">Decks left</p>
+                <p className="text-xl font-semibold tabular-nums text-zinc-300">{decksLeft}</p>
+              </div>
+              <div>
+                <p className="text-[10px] text-zinc-500 uppercase tracking-wide">Cards seen</p>
+                <p className="text-xl font-semibold tabular-nums text-zinc-300">{discardedCards}</p>
+              </div>
+            </div>
           </>
         )}
-        <p className="text-xs text-text-dim mt-2">
-          {decksLeft} decks left · {discardedCards} cards seen
-        </p>
-      </Card>
+      </div>
 
+      {/* Card Buttons */}
       <div className="space-y-3">
         {CARD_GROUPS.map((group) => (
           <div key={group.label}>
-            <p className="text-[11px] text-text-dim uppercase tracking-wide mb-1 px-1">
+            <p className="text-[11px] text-zinc-500 uppercase tracking-wide mb-2 px-1 font-['Poppins']">
               {group.label}
             </p>
             <div className="flex gap-2">
               {group.ranks.map(({ display, rank }) => (
                 <button
                   key={display}
+                  type="button"
                   onClick={() => logCard({ suit: 'S', rank })}
-                  className={`flex-1 py-3 rounded-xl font-bold text-lg border transition-colors
-                    ${group.delta > 0
-                      ? 'border-green-400/40 bg-green-500/10 text-green-400 active:bg-green-500/20'
+                  className={`flex-1 py-3 rounded-xl font-bold text-lg border transition-colors active:scale-95 ${
+                    group.delta > 0
+                      ? 'border-green-500/30 bg-green-500/10 text-green-400 hover:bg-green-500/20'
                       : group.delta < 0
-                      ? 'border-red-400/40 bg-red-500/10 text-red-400 active:bg-red-500/20'
-                      : 'border-border bg-surface text-text-dim active:bg-border'
-                    }`}
+                        ? 'border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20'
+                        : 'border-zinc-700 bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+                  }`}
                 >
                   {display}
                 </button>
@@ -113,9 +124,14 @@ export function CountPage() {
         ))}
       </div>
 
-      <Button variant="ghost" className="w-full" onClick={resetCount}>
+      {/* Reset */}
+      <button
+        type="button"
+        onClick={resetCount}
+        className="w-full mt-4 py-3 text-sm font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 rounded-xl transition-colors border border-transparent hover:border-zinc-700"
+      >
         Reset count
-      </Button>
+      </button>
     </div>
   );
 }
