@@ -16,10 +16,11 @@ const ALL_ACTIONS: StrategyCellValue[] = ['H', 'S', 'D/H', 'D/S', 'P', 'P/H', 'R
 interface StrategyCellProps {
   value: StrategyCellValue;
   canSplit: boolean;
+  popupUp?: boolean;
   onChange: (value: StrategyCellValue) => void;
 }
 
-export function StrategyCell({ value, canSplit, onChange }: StrategyCellProps) {
+export function StrategyCell({ value, canSplit, popupUp, onChange }: StrategyCellProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -52,7 +53,7 @@ export function StrategyCell({ value, canSplit, onChange }: StrategyCellProps) {
       </button>
 
       {open && (
-        <div className="absolute left-0 z-30 flex flex-col w-full overflow-hidden border divide-y rounded divide-zinc-700 bg-zinc-900 border-zinc-700">
+        <div className={`absolute left-0 z-30 flex flex-col w-full overflow-hidden border divide-y rounded divide-zinc-700 bg-zinc-900 border-zinc-700 ${popupUp ? 'bottom-full' : ''}`}>
           {options.map((opt) => (
             <button
               key={opt}
