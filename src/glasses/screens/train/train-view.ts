@@ -77,7 +77,7 @@ export class TrainView implements View {
 		if (!game) {
 			return {
 				shield: '',
-				header: buildHeader('Train'),
+				header: buildHeader(),
 				body: centerLine('Dealing...', BODY_INNER_WIDTH),
 				footer: buildFooter('train'),
 			};
@@ -107,11 +107,10 @@ export class TrainView implements View {
 			// On result, show the feedback (correct/wrong) instead of won/lost
 			let feedbackLine = '';
 			if (feedback) {
-				const icon = feedback.isCorrect ? 'OK' : 'NO';
 				const correctActions = feedback.actions.map((a) => actionLabel(a)).join('/');
 				feedbackLine = feedback.isCorrect
-					? `${icon} Correct! ${feedback.entry} vs ${feedback.vs} -> ${correctActions}`
-					: `${icon} Wrong! ${feedback.entry} vs ${feedback.vs} -> ${correctActions}`;
+					? `Correct! ${feedback.entry} vs ${feedback.vs} -> ${correctActions}`
+					: `Wrong! ${feedback.entry} vs ${feedback.vs} -> ${correctActions}`;
 			}
 
 			body = [
@@ -121,7 +120,7 @@ export class TrainView implements View {
 				'',
 				...(feedbackLine ? [centerLine(feedbackLine, BODY_INNER_WIDTH)] : []),
 				'',
-				centerLine('Tap for new hand', BODY_INNER_WIDTH),
+				centerLine('[Tap for new hand]', BODY_INNER_WIDTH),
 			].join('\n');
 		} else if (phase === 'player-turn' && activeHand) {
 			const actions: (PlayerAction | 'skip')[] = [...availableActions(activeHand.cards), 'skip'];
@@ -149,7 +148,9 @@ export class TrainView implements View {
 				centerLine(playerText, BODY_INNER_WIDTH),
 				'',
 				...(feedbackLine ? [centerLine(feedbackLine, BODY_INNER_WIDTH)] : []),
-				...(feedback ? [] : [centerLine(actionBar, BODY_INNER_WIDTH)]),
+				...(feedback
+					? [centerLine('[Tap for new hand]', BODY_INNER_WIDTH)]
+					: [centerLine(actionBar, BODY_INNER_WIDTH)]),
 			].join('\n');
 		} else {
 			body = centerLine('Dealing...', BODY_INNER_WIDTH);
@@ -157,7 +158,7 @@ export class TrainView implements View {
 
 		return {
 			shield: '',
-			header: buildHeader('Train'),
+			header: buildHeader(),
 			body,
 			footer: buildFooter('train'),
 		};
