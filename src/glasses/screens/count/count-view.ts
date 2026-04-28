@@ -4,8 +4,12 @@ import { appStore } from '../../../app/store';
 import { computeTrueCount, suggestedUnits } from '../../../domain/count';
 import type { Router } from '../../router';
 import type { HudLayoutDescriptor, View, ViewKey } from '../../types';
-import { alignRow, toFullwidth } from '../../utils';
+import { alignRow } from '../../utils';
 import { BODY_INNER_WIDTH, buildFooter, buildHeader, ROOT_LAYOUT } from '../shared-shell';
+
+function fwDigits(str: string): string {
+	return str.replace(/[0-9]/g, (ch) => String.fromCharCode(ch.charCodeAt(0) + 0xFEE0));
+}
 
 export class CountView implements View {
 	readonly key: ViewKey = 'count';
@@ -28,21 +32,21 @@ export class CountView implements View {
 		const { runningCount, discardedCards, settings } = state;
 		const trueCount = computeTrueCount(runningCount, discardedCards, settings.deckCount);
 		const sign = (n: number) => (n > 0 ? `+${n}` : String(n));
-		const halfDecks = Math.floor(discardedCards / 26);
-		const totalHalfDecks = settings.deckCount * 2;
-		const remainingHalfDecks = Math.max(0, totalHalfDecks - halfDecks);
+		const totalCards = settings.deckCount * 52;
+		const remainingCards = Math.max(0, totalCards - discardedCards);
+		const decksRemaining = (remainingCards / 52).toFixed(1);
 
 		return {
 			shield: '',
 			header: buildHeader(),
 			body: [
-				alignRow('Running count', toFullwidth(sign(runningCount)), BODY_INNER_WIDTH),
-				alignRow('True count', toFullwidth(sign(trueCount)), BODY_INNER_WIDTH),
-				'',
-				alignRow('Suggested unit', toFullwidth(String(suggestedUnits(trueCount))), BODY_INNER_WIDTH),
-				'',
-				alignRow('Decks remaining', toFullwidth((remainingHalfDecks / 2).toFixed(1)), BODY_INNER_WIDTH),
-				alignRow('Cards dealt', toFullwidth(String(discardedCards)), BODY_INNER_WIDTH),
+			alignRow('Running count', fwDigits(sign(runningCount)), BODY_INNER_WIDTH),
+			alignRow('True count', fwDigits(sign(trueCount)), BODY_INNER_WIDTH),
+			'',
+			alignRow('Suggested unit', fwDigits(String(suggestedUnits(trueCount))), BODY_INNER_WIDTH),
+			'',
+			alignRow('Decks remaining', fwDigits(decksRemaining), BODY_INNER_WIDTH),
+			alignRow('Cards dealt', fwDigits(String(discardedCards)), BODY_INNER_WIDTH),
 			].join('\n'),
 			footer: buildFooter('count'),
 		};
