@@ -1,16 +1,14 @@
 {
-  "package_id": "com.plungarini.blackjack",
-  "name": "Blackjack",
-  "version": "0.0.0",
-  "edition": "202601",
-  "entrypoint": "index.html",
-  "description": "Blackjack app for Even Realities glasses",
-  "author": "plungarini",
-  "permissions": [],
-  "supported_languages": [
-    "en"
-  ],
-  "tagline": "",
-  "min_app_version": "2.1.1",
-  "min_sdk_version": "0.0.9"
+	"author": "plungarini",
+	"description": "A Blackjack strategy trainer that runs in your pocket and on your glasses. Drill perfect plays, practice Hi-Lo counting, and track your accuracy — all with real-time feedback on a heads-up display.",
+	"edition": "202601",
+	"entrypoint": "index.html",
+	"min_app_version": "2.1.1",
+	"min_sdk_version": "0.0.9",
+	"name": "Blackjack",
+	"package_id": "com.plungarini.blackjack",
+	"permissions": [],
+	"supported_languages": ["en"],
+	"tagline": "See the count. Know the play. Own the table.",
+	"version": "0.1.0"
 }

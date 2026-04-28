@@ -1,64 +1,74 @@
-import { OsEventTypeList, type EvenHubEvent, waitForEvenAppBridge } from '@evenrealities/even_hub_sdk';
+import { waitForEvenAppBridge } from '@evenrealities/even_hub_sdk';
 import { HudSession } from './glasses/session';
-import type { HudViewState } from './glasses/types';
-import {
-  createInitialHudState,
-  setHudReady,
-  toHudRenderState,
-  touchHudClock,
-} from './glasses/view';
+import { Router } from './glasses/router';
+import { initRenderLoop, scheduleRender } from './glasses/render-loop';
+import { initEventDispatcher } from './glasses/events';
+import { CountView } from './glasses/screens/count/count-view';
+import { TrainView } from './glasses/screens/train/train-view';
+import { StrategyView } from './glasses/screens/strategy/strategy-view';
+import { StatsView } from './glasses/screens/stats/stats-view';
+import { SettingsView } from './glasses/screens/settings/settings-view';
+import { MenuView } from './glasses/screens/menu/menu-view';
+import { appStore } from './app/store';
+import type { ViewKey } from './glasses/types';
 
-let state: HudViewState = createInitialHudState();
-let bridgeRef: Awaited<ReturnType<typeof waitForEvenAppBridge>> | null = null;
-let session: HudSession | null = null;
-
-function resolveEventType(event: EvenHubEvent) {
-  return event.textEvent?.eventType ?? event.sysEvent?.eventType ?? event.listEvent?.eventType;
-}
-
-async function render(): Promise<void> {
-  if (!session) return;
-  await session.render(toHudRenderState(state));
-}
-
-async function handleEvent(event: EvenHubEvent): Promise<void> {
-  if (!bridgeRef) return;
-  const type = resolveEventType(event);
-
-  // Double tap → shut down the HUD page (returns user to the Even app menu).
-  if (type === OsEventTypeList.DOUBLE_CLICK_EVENT) {
-    await bridgeRef.shutDownPageContainer(1);
-    return;
-  }
-
-  // Single click / undefined (CLICK_EVENT === 0 sometimes arrives as undefined).
-  if (type === OsEventTypeList.CLICK_EVENT || type === undefined) {
-    state = touchHudClock(state);
-    await render();
-  }
-}
+const TAB_TO_VIEW: Record<string, ViewKey> = {
+  count: 'count',
+  train: 'train',
+  strategy: 'strategy',
+  stats: 'stats',
+  settings: 'settings',
+};
 
 async function boot(): Promise<void> {
   try {
-    console.log('[GlassesMain] waiting for Even bridge...');
-    bridgeRef = await waitForEvenAppBridge();
+    console.log('[GlassesMain] waiting for Even bridge…');
+    const bridge = await waitForEvenAppBridge();
     console.log('[GlassesMain] bridge acquired');
 
-    session = new HudSession(bridgeRef);
-    bridgeRef.onEvenHubEvent((event) => {
-      void handleEvent(event);
+    const session = new HudSession(bridge);
+
+    const countView = new CountView();
+    const trainView = new TrainView();
+    const strategyView = new StrategyView();
+    const statsView = new StatsView();
+    const settingsView = new SettingsView();
+    const menuView = new MenuView(bridge);
+
+    const initialKey = (TAB_TO_VIEW[appStore.getState().tab] ?? 'count') as ViewKey;
+
+    const router = new Router(
+      { count: countView, train: trainView, strategy: strategyView, stats: statsView, settings: settingsView, menu: menuView },
+      initialKey,
+    );
+
+    countView.setRouter(router);
+    trainView.setRouter(router);
+    strategyView.setRouter(router);
+    statsView.setRouter(router);
+    settingsView.setRouter(router);
+    menuView.setRouter(router);
+
+    initRenderLoop(session, router);
+    initEventDispatcher(bridge, router);
+
+    let lastTab = appStore.getState().tab;
+    appStore.subscribe(() => {
+      const state = appStore.getState();
+      if (state.tab !== lastTab) {
+        lastTab = state.tab;
+        const target = TAB_TO_VIEW[state.tab] as ViewKey | undefined;
+        if (target && router.currentKey !== 'menu' && router.currentKey !== target) {
+          router.reset(target);
+        }
+      }
+      scheduleRender();
     });
 
-    state = setHudReady(state, 'Hello from Blackjack');
-    await render();
-
-    // Tick once a minute to keep any time-sensitive content fresh.
-    window.setInterval(() => {
-      state = touchHudClock(state);
-      void render();
-    }, 60_000);
+    router.subscribe(scheduleRender);
+    scheduleRender();
   } catch (error) {
-    console.warn('[GlassesMain] bridge unavailable — running in web-only mode', error);
+    console.warn('[GlassesMain] bridge unavailable — web-only mode', error);
   }
 }
 

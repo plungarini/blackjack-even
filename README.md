@@ -1,40 +1,43 @@
 # Blackjack
 
-Even Realities G2 glasses app.
+Even Realities G2 smart glasses app — Hi-Lo card counting assistant and basic strategy trainer.
+
+## What it does
+
+Five screens accessible from both the phone and glasses:
+
+- **Count** (default): Live Hi-Lo card counting. Scroll up = +1, scroll down = −1. Running count and true count displayed on glasses; full card-logging interface on phone.
+- **Train**: Basic strategy trainer. Shows a blackjack scenario; you pick the correct action. Tracks accuracy per combo; focuses training on your weakest spots.
+- **Strategy**: Full basic strategy table (Hard/Soft/Pairs). Read-only reference on glasses; color-coded grid on phone.
+- **Stats**: Per-combo accuracy stats. Shows your overall accuracy and weakest spots.
+- **Settings**: Deck count, S17/H17, DAS, surrender, training mode, and threshold.
 
 ## Architecture
 
 Two layers run side-by-side in the same Vite bundle:
 
-- **Web UI** (`src/App.tsx`) — built with [even-toolkit](https://www.npmjs.com/package/even-toolkit) (`even-toolkit/web`). Renders inside the iPhone WebView.
-- **Glasses HUD** (`src/glasses-main.ts` + `src/glasses/*`) — pure TypeScript using the **official `@evenrealities/even_hub_sdk`** directly. No framework, no toolkit. Side-effect-imported from `main.tsx`.
+- **Web UI** (`src/pages/*.tsx`) — React + even-toolkit, renders inside the iPhone WebView
+- **Glasses HUD** (`src/glasses/`) — plain TypeScript + Even Hub SDK, sends text containers to the G2 display
 
-## Structure
-
-```
-src/
-  main.tsx              — React entry; side-effect-imports glasses-main
-  App.tsx               — Web UI (even-toolkit/web)
-  app.css               — Tailwind + even-toolkit theme imports
-  glasses-main.ts       — HUD bootstrap (bridge + event loop)
-  glasses/
-    types.ts            — Layout + view state types
-    utils.ts            — Text alignment helpers (centerLine, alignRow, alignThree)
-    view.ts             — Layout descriptor + render state builder
-    session.ts          — Bridge wrapper (page create / rebuild / upgrade)
-```
-
-## Gestures
-
-- **Single click** — refresh / advance (current scaffold just touches the clock)
-- **Double click** — `bridge.shutDownPageContainer(1)` exits the HUD
+Shared state via `src/app/store.ts` (custom pub/sub store). Persistence via Even Hub Bridge Local Storage.
 
 ## Dev
 
 ```bash
-npm run dev      # vite dev server at 0.0.0.0:5173
+npm install
+npm run dev      # Vite dev server at 0.0.0.0:5173
 npm run qr       # QR code to load on your phone
-npm run emulator # browser-based G2 simulator
-npm run build    # production build
-npm run pack     # build + package as .ehpk for Even Hub
+npm run emulator # Browser-based G2 simulator
+npm run build    # Production build
+npm run pack     # Build + package as .ehpk
 ```
+
+## Glasses gestures
+
+| Gesture | Action |
+|---|---|
+| Scroll up | Count +1 (Count screen) / cycle action up (Train) / prev page (Strategy/Stats) |
+| Scroll down | Count −1 (Count screen) / cycle action down (Train) / next page (Strategy/Stats) |
+| Single tap | Submit action (Train) / confirm reset (Count) |
+| Double tap | Open menu overlay (from any screen) |
+| Double tap on menu | Exit app |
