@@ -16,7 +16,6 @@ export function TrainPage() {
 		showCount,
 		setShowCount,
 		showScore,
-		setShowScore,
 		newGame,
 		hit,
 		stand,
@@ -50,7 +49,7 @@ export function TrainPage() {
 	const discardedHalfDecks = Math.floor(game.discardedCount / 26);
 
 	return (
-		<div className="p-3 sm:p-4 pb-32 max-h-[100dvh] overflow-y-auto">
+    <div className="p-3 sm:p-4 pb-32">
 			{/* Feedback banner above the play table */}
 			<StrategyFeedbackBanner feedback={game.feedback} />
 

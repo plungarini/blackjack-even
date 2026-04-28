@@ -84,7 +84,7 @@ export function SettingsPage() {
   };
 
   return (
-    <div className="p-3 sm:p-4 pb-32 max-h-[100dvh] overflow-y-auto">
+    <div className="p-3 sm:p-4 pb-32">
       <h2 className="pb-2 border-b border-zinc-800 text-lg font-semibold text-zinc-100">
         Settings & Preferences
       </h2>
