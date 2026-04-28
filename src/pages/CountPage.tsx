@@ -1,6 +1,6 @@
 import { useAppSelector } from '../app/hooks/useAppSelector';
 import { useCountActions } from '../app/hooks/useCountActions';
-import { computeTrueCount } from '../domain/count';
+import { computeTrueCount, suggestedUnits } from '../domain/count';
 import type { Rank } from '../domain/deck';
 
 interface CardGroup {
@@ -90,6 +90,10 @@ export function CountPage() {
                 <p className="text-[10px] text-zinc-500 uppercase tracking-wide">Cards seen</p>
                 <p className="text-xl font-semibold tabular-nums text-zinc-300">{discardedCards}</p>
               </div>
+              <div>
+                <p className="text-[10px] text-zinc-500 uppercase tracking-wide">Suggested unit</p>
+                <p className="text-xl font-semibold tabular-nums text-emerald-400">{suggestedUnits(trueCount)}</p>
+              </div>
             </div>
           </>
         )}
@@ -128,7 +132,7 @@ export function CountPage() {
       <button
         type="button"
         onClick={resetCount}
-        className="w-full mt-4 py-3 text-sm font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 rounded-xl transition-colors border border-transparent hover:border-zinc-700"
+        className="w-full mt-4 py-3 text-sm font-semibold text-zinc-200 bg-zinc-800 hover:bg-zinc-700 rounded-xl transition-colors border border-zinc-600 hover:border-zinc-500 active:scale-95"
       >
         Reset count
       </button>

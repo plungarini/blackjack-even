@@ -18,3 +18,12 @@ export function computeTrueCount(runningCount: number, discardedCards: number, t
   if (remainingHalfDecks <= 0) return 0;
   return Math.round(runningCount / remainingHalfDecks);
 }
+
+export function suggestedUnits(trueCount: number): number {
+  if (trueCount <= 0) return 1;
+  if (trueCount === 1) return 2;
+  if (trueCount === 2) return 4;
+  if (trueCount === 3) return 6;
+  if (trueCount === 4) return 8;
+  return 12;
+}
