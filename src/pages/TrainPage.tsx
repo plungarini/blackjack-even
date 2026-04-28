@@ -27,19 +27,33 @@ export function TrainPage() {
     gameOver,
   } = useBlackjackGame(settings.deckCount, settings.trainingMode, settings.trainingThreshold);
 
-  // Auto-deal on first mount if no hands
+  // Auto-deal on first mount if no game
   useEffect(() => {
-    if (game.phase === 'idle') {
+    if (!game || game.phase === 'idle') {
       newGame();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  if (!game) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="text-center">
+          <div className="text-5xl mb-4">♠</div>
+          <p className="text-text-dim text-sm font-['Poppins']">Dealing…</p>
+        </div>
+      </div>
+    );
+  }
 
   const dealerScore = handValue(game.dealerHand);
   const discardedHalfDecks = Math.floor(game.discardedCount / 26);
 
   return (
     <div className="p-3 sm:p-4 pb-32 max-h-[100dvh] overflow-y-auto">
+      {/* Feedback banner above the play table */}
+      <StrategyFeedbackBanner feedback={game.feedback} />
+
       <div className="relative flex flex-col p-3 sm:p-4 rounded-md gap-y-6 sm:gap-y-8 bg-slate-800">
         <DealerArea
           hand={game.dealerHand}
@@ -77,8 +91,6 @@ export function TrainPage() {
           onNewGame={newGame}
         />
       </div>
-
-      <StrategyFeedbackBanner feedback={game.feedback} />
     </div>
   );
 }

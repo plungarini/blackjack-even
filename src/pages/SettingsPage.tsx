@@ -214,12 +214,6 @@ export function SettingsPage() {
           <Toggle checked={settings.allowDoubleAfterSplit} onChange={(v) => update({ allowDoubleAfterSplit: v })} />
         </SettingRow>
 
-        <SettingRow
-          title="Allow surrender"
-          description="Late surrender available"
-        >
-          <Toggle checked={settings.allowSurrender} onChange={(v) => update({ allowSurrender: v })} />
-        </SettingRow>
       </div>
 
       {/* Reset stats */}
