@@ -8,7 +8,6 @@ export interface UserSettings {
   trainingThreshold: number;
   dealerHitsOnSoft17: boolean;
   allowDoubleAfterSplit: boolean;
-  allowSurrender: boolean;
   theme: ThemeMode;
 }
 
@@ -19,9 +18,8 @@ export const DEFAULT_SETTINGS: UserSettings = {
   trainingMode: false,
   trainingThreshold: 60,
   dealerHitsOnSoft17: false,
-  allowDoubleAfterSplit: true,
-  allowSurrender: true,
-  theme: 'system',
+    allowDoubleAfterSplit: true,
+    theme: 'system',
 };
 
 export function clampSettings(settings: Partial<UserSettings>): UserSettings {
