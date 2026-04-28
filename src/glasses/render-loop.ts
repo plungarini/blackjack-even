@@ -1,3 +1,4 @@
+import { appStore } from '../app/store';
 import type { HudRenderState } from './types';
 import type { HudSession } from './session';
 import type { Router } from './router';
@@ -32,7 +33,6 @@ export function scheduleRender(): void {
 
 async function doRender(): Promise<void> {
   if (!session || !router) return;
-  const { appStore } = await import('../app/store');
   const state = appStore.getState();
 
   let next: HudRenderState;
