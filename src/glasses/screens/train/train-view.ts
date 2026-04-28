@@ -3,7 +3,6 @@ import { OsEventTypeList } from '@evenrealities/even_hub_sdk';
 import { appStore } from '../../../app/store';
 import type { Card, Rank } from '../../../domain/deck';
 import {
-	advanceAfterFeedback,
 	dealAndSync,
 	doubleAndSync,
 	hitAndSync,
@@ -161,9 +160,7 @@ export class TrainView implements View {
 				centerLine(playerText, BODY_INNER_WIDTH),
 				'',
 				...(feedbackLine ? [centerLine(feedbackLine, BODY_INNER_WIDTH)] : []),
-				...(feedback
-					? [centerLine('[Tap for new hand]', BODY_INNER_WIDTH)]
-					: [centerLine(actionBar, BODY_INNER_WIDTH)]),
+				centerLine(actionBar, BODY_INNER_WIDTH),
 			].join('\n');
 		} else {
 			body = centerLine('Dealing...', BODY_INNER_WIDTH);
@@ -199,14 +196,6 @@ export class TrainView implements View {
 		if (game.phase === 'player-turn') {
 			const activeHand = game.playerHands[game.activeHandIndex];
 			if (!activeHand) return;
-
-			// If feedback is showing, click advances/clears it
-			if (game.feedback) {
-				if (type === OsEventTypeList.CLICK_EVENT || type === undefined) {
-					advanceAfterFeedback();
-				}
-				return;
-			}
 
 			const actions: (PlayerAction | 'skip')[] = [...availableActions(activeHand.cards), 'skip'];
 
