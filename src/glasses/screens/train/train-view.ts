@@ -32,6 +32,19 @@ function formatHand(cards: Card[]): string {
 		.join(' + ');
 }
 
+function formatDealerHand(cards: Card[]): string {
+	if (cards.length < 2) {
+		return cards.map((c) => (c.hidden ? '?' : displayRank(c.rank))).join(' + ');
+	}
+	// Dealer hand is stored as [hole, up, hit1, hit2, ...]
+	// Display as [up, hole, hit1, hit2, ...] so the visible card comes first
+	const upCard = cards[1];
+	const holeCard = cards[0];
+	const hits = cards.slice(2);
+	const ordered = [upCard, holeCard, ...hits];
+	return ordered.map((c) => (c.hidden ? '?' : displayRank(c.rank))).join(' + ');
+}
+
 function actionLabel(action: PlayerAction): string {
 	const map: Record<PlayerAction, string> = {
 		hit: 'Hit',
@@ -87,7 +100,7 @@ export class TrainView implements View {
 		const activeHand = playerHands[activeHandIndex];
 
 		// Build dealer text
-		const dealerCards = formatHand(dealerHand);
+		const dealerCards = formatDealerHand(dealerHand);
 		const dealerTotal = handValue(dealerHand);
 		const dealerText =
 			dealerHand.length >= 2
