@@ -4,7 +4,7 @@ import { appStore } from '../../../app/store';
 import { computeTrueCount, suggestedUnits } from '../../../domain/count';
 import type { Router } from '../../router';
 import type { HudLayoutDescriptor, View, ViewKey } from '../../types';
-import { alignRow } from '../../utils';
+import { alignRow, toFullwidth } from '../../utils';
 import { BODY_INNER_WIDTH, buildFooter, buildHeader, ROOT_LAYOUT } from '../shared-shell';
 
 export class CountView implements View {
@@ -36,13 +36,13 @@ export class CountView implements View {
 			shield: '',
 			header: buildHeader(),
 			body: [
-				alignRow('Running count', sign(runningCount), BODY_INNER_WIDTH),
-				alignRow('True count', sign(trueCount), BODY_INNER_WIDTH),
+				alignRow('Running count', toFullwidth(sign(runningCount)), BODY_INNER_WIDTH),
+				alignRow('True count', toFullwidth(sign(trueCount)), BODY_INNER_WIDTH),
 				'',
-				alignRow('Suggested unit', `${suggestedUnits(trueCount)}`, BODY_INNER_WIDTH),
+				alignRow('Suggested unit', toFullwidth(String(suggestedUnits(trueCount))), BODY_INNER_WIDTH),
 				'',
-				alignRow('Decks remaining', `${(remainingHalfDecks / 2).toFixed(1)}`, BODY_INNER_WIDTH),
-				alignRow('Cards dealt', `${discardedCards}`, BODY_INNER_WIDTH),
+				alignRow('Decks remaining', toFullwidth((remainingHalfDecks / 2).toFixed(1)), BODY_INNER_WIDTH),
+				alignRow('Cards dealt', toFullwidth(String(discardedCards)), BODY_INNER_WIDTH),
 			].join('\n'),
 			footer: buildFooter('count'),
 		};

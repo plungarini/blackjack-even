@@ -49,6 +49,12 @@ function countColor(n: number): string {
   return 'text-zinc-400';
 }
 
+function toFw(str: string): string {
+  return str.replace(/[\x20-\x7E]/g, (ch) =>
+    ch === ' ' ? '\u3000' : String.fromCharCode(ch.charCodeAt(0) + 0xFEE0)
+  );
+}
+
 export function CountPage() {
   const runningCount = useAppSelector((s) => s.runningCount);
   const discardedCards = useAppSelector((s) => s.discardedCards);
@@ -73,26 +79,26 @@ export function CountPage() {
               Running count
             </p>
             <p className={`text-6xl font-bold tabular-nums font-['Poppins'] ${countColor(runningCount)}`}>
-              {runningCount > 0 ? `+${runningCount}` : runningCount}
+              {toFw(runningCount > 0 ? `+${runningCount}` : String(runningCount))}
             </p>
             <div className="mt-3 flex justify-center gap-6">
               <div>
                 <p className="text-[10px] text-zinc-500 uppercase tracking-wide">True count</p>
                 <p className={`text-xl font-semibold tabular-nums ${countColor(trueCount)}`}>
-                  {trueCount > 0 ? `+${trueCount}` : trueCount}
+                  {toFw(trueCount > 0 ? `+${trueCount}` : String(trueCount))}
                 </p>
               </div>
               <div>
                 <p className="text-[10px] text-zinc-500 uppercase tracking-wide">Decks left</p>
-                <p className="text-xl font-semibold tabular-nums text-zinc-300">{decksLeft}</p>
+                <p className="text-xl font-semibold tabular-nums text-zinc-300">{toFw(decksLeft)}</p>
               </div>
               <div>
                 <p className="text-[10px] text-zinc-500 uppercase tracking-wide">Cards seen</p>
-                <p className="text-xl font-semibold tabular-nums text-zinc-300">{discardedCards}</p>
+                <p className="text-xl font-semibold tabular-nums text-zinc-300">{toFw(String(discardedCards))}</p>
               </div>
               <div>
                 <p className="text-[10px] text-zinc-500 uppercase tracking-wide">Suggested unit</p>
-                <p className="text-xl font-semibold tabular-nums text-emerald-400">{suggestedUnits(trueCount)}</p>
+                <p className="text-xl font-semibold tabular-nums text-emerald-400">{toFw(String(suggestedUnits(trueCount)))}</p>
               </div>
             </div>
           </>
