@@ -115,16 +115,18 @@ export function newGame(deckCount: number, trainingMode: boolean, trainingThresh
     p1 = c1 ?? drawCard(s1)[0];
     shoe = c1 ? s1 : s1.slice(0, -1);
 
-    const [cD, sD] = drawCardByValue(shoe, target.dealer);
-    d1 = cD ?? drawCard(sD)[0];
-    shoe = cD ? sD : sD.slice(0, -1);
+    // d1 is the hole card (index 0, hidden) — draw randomly
+    d1 = drawCard(shoe)[0];
+    shoe = shoe.slice(0, -1);
 
     const [c2, s2] = drawCardByValue(shoe, target.player[1]);
     p2 = c2 ?? drawCard(s2)[0];
     shoe = c2 ? s2 : s2.slice(0, -1);
 
-    d2 = drawCard(shoe)[0];
-    shoe = shoe.slice(0, -1);
+    // d2 is the upcard (index 1, visible) — draw the targeted rank
+    const [cD, sD] = drawCardByValue(shoe, target.dealer);
+    d2 = cD ?? drawCard(sD)[0];
+    shoe = cD ? sD : sD.slice(0, -1);
   } else {
     [p1, shoe] = drawCard(shoe);
     [d1, shoe] = drawCard(shoe);

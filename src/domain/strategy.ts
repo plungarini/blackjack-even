@@ -1,9 +1,10 @@
 import { Card, Rank } from './deck';
-import { cardValue, handValue } from './hand';
+import { cardValue, handValue, isSoft } from './hand';
 
 export type StrategyEntry =
   | '8' | '9' | '10' | '11' | '12' | '13' | '14' | '15' | '16' | '17'
-  | 'A,2' | 'A,3' | 'A,4' | 'A,5' | 'A,6' | 'A,7' | 'A,8'
+  | '18' | '19' | '20' | '21'
+  | 'A,2' | 'A,3' | 'A,4' | 'A,5' | 'A,6' | 'A,7' | 'A,8' | 'A,9' | 'A,10'
   | '2,2' | '3,3' | '4,4' | '5,5' | '6,6' | '7,7' | '8,8' | '9,9' | '10,10' | 'A,A';
 
 export type StrategyVs = '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10' | 'A';
@@ -29,6 +30,10 @@ export const DEFAULT_STRATEGY: StrategyTable = {
   '15':    row(['S',   'S',   'S',   'S',   'S',   'H',   'H',   'H',   'R/H', 'R/H']),
   '16':    row(['S',   'S',   'S',   'S',   'S',   'H',   'H',   'R/H', 'R/H', 'R/H']),
   '17':    row(['S',   'S',   'S',   'S',   'S',   'S',   'S',   'S',   'S',   'S'  ]),
+  '18':    row(['S',   'S',   'S',   'S',   'S',   'S',   'S',   'S',   'S',   'S'  ]),
+  '19':    row(['S',   'S',   'S',   'S',   'S',   'S',   'S',   'S',   'S',   'S'  ]),
+  '20':    row(['S',   'S',   'S',   'S',   'S',   'S',   'S',   'S',   'S',   'S'  ]),
+  '21':    row(['S',   'S',   'S',   'S',   'S',   'S',   'S',   'S',   'S',   'S'  ]),
   'A,2':   row(['H',   'H',   'H',   'D/H', 'D/H', 'H',   'H',   'H',   'H',   'H'  ]),
   'A,3':   row(['H',   'H',   'H',   'D/H', 'D/H', 'H',   'H',   'H',   'H',   'H'  ]),
   'A,4':   row(['H',   'H',   'D/H', 'D/H', 'D/H', 'H',   'H',   'H',   'H',   'H'  ]),
@@ -36,6 +41,8 @@ export const DEFAULT_STRATEGY: StrategyTable = {
   'A,6':   row(['H',   'D/H', 'D/H', 'D/H', 'D/H', 'H',   'H',   'H',   'H',   'H'  ]),
   'A,7':   row(['S',   'D/S', 'D/S', 'D/S', 'D/S', 'S',   'S',   'H',   'H',   'H'  ]),
   'A,8':   row(['S',   'S',   'S',   'S',   'S',   'S',   'S',   'S',   'S',   'S'  ]),
+  'A,9':   row(['S',   'S',   'S',   'S',   'S',   'S',   'S',   'S',   'S',   'S'  ]),
+  'A,10':  row(['S',   'S',   'S',   'S',   'S',   'S',   'S',   'S',   'S',   'S'  ]),
   '2,2':   row(['P/H', 'P/H', 'P',   'P',   'P',   'P',   'H',   'H',   'H',   'H'  ]),
   '3,3':   row(['P/H', 'P/H', 'P',   'P',   'P',   'P',   'H',   'H',   'H',   'H'  ]),
   '4,4':   row(['H',   'H',   'H',   'P/H', 'P/H', 'H',   'H',   'H',   'H',   'H'  ]),
@@ -83,14 +90,13 @@ export function getStrategyEntry(hand: Card[]): StrategyEntry | null {
       const other = visible[aceIdx === 0 ? 1 : 0]!;
       const otherVal = cardValue(other.rank);
       if (otherVal <= 8 && otherVal >= 2) return `A,${otherVal}` as StrategyEntry;
-      // A,9 or A,10 (blackjack) — treat as hard total or A,8
-      if (otherVal === 9 || otherVal === 10) return 'A,8';
+      if (otherVal === 9 || otherVal === 10) return `A,${otherVal}` as StrategyEntry;
     }
   }
 
   const total = handValue(visible);
   if (total <= 8) return '8';
-  if (total >= 17) return '17';
+  if (total >= 17) return String(Math.min(total, 21)) as StrategyEntry;
   return String(total) as StrategyEntry;
 }
 
@@ -172,7 +178,7 @@ export function getStrategyFeedback(
       const other = visible[aceIdx === 0 ? 1 : 0]!;
       const otherVal = cardValue(other.rank);
       if (otherVal >= 9) {
-        return { entry: '17', vs: dealerVs, actions: ['stand'] };
+        return { entry: `A,${otherVal}` as StrategyEntry, vs: dealerVs, actions: ['stand'] };
       }
       const softEntry = `A,${otherVal}` as StrategyEntry;
       const cell = lookupStrategy(softEntry, dealerVs, overrides);
@@ -180,8 +186,20 @@ export function getStrategyFeedback(
     }
   }
 
+  // Multi-card soft hand check (e.g., [A,4,2] = soft 17 should use 'A,6' entry, not '17')
+  if (isSoft(visible)) {
+    const score = handValue(visible);
+    const nonAceSum = score - 11;
+    if (nonAceSum >= 9) {
+      return { entry: `A,${nonAceSum}` as StrategyEntry, vs: dealerVs, actions: ['stand'] };
+    }
+    const softEntry = `A,${nonAceSum}` as StrategyEntry;
+    const cell = lookupStrategy(softEntry, dealerVs, overrides);
+    return { entry: softEntry, vs: dealerVs, actions: cellValueToActions(cell) };
+  }
+
   const score = handValue(visible);
-  if (score > 17) return { entry: '17', vs: dealerVs, actions: ['stand'] };
+  if (score > 17) return { entry: String(Math.min(score, 21)) as StrategyEntry, vs: dealerVs, actions: ['stand'] };
   if (score < 8) return { entry: '8', vs: dealerVs, actions: ['hit'] };
 
   const entry = String(score) as StrategyEntry;
